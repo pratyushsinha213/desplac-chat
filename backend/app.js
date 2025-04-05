@@ -12,6 +12,9 @@ import { CLIENT_URI, PORT } from './config/env.js';
 import connectToDatabase from './database/mongoose.js';
 import userRouter from './routes/user.route.js';
 import messageRouter from './routes/message.route.js';
+import job from './lib/cron.js';
+
+job.start()
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
