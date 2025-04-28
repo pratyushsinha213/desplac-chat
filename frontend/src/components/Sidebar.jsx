@@ -16,7 +16,7 @@ const Sidebar = () => {
     getUsers()
   }, [getUsers]);
 
-  const filteredUsers = showOnline ? users.filter((user) => onlineUsers.includes(user._id)) : users;
+  const filteredUsers = showOnline ? users?.filter((user) => onlineUsers?.includes(user._id)) : users;
 
   if (isUsersLoading) return <SidebarSkeleton />
 
@@ -39,12 +39,12 @@ const Sidebar = () => {
             />
             <span className='text-sm'>Show online only</span>
           </label>
-          <span className='text-xs text-zinc-500'>({onlineUsers.length-1} online)</span>
+          <span className='text-xs text-zinc-500'>({onlineUsers?.length-1} online)</span>
         </div>
       </div>
 
       <div className="w-full py-3 overflow-y-auto">
-        {filteredUsers.map((user) => (
+        {filteredUsers?.map((user) => (
           <button
             key={user._id}
             onClick={() => setSelectedUser(user)}
@@ -60,7 +60,7 @@ const Sidebar = () => {
                 alt={user.name}
                 className="object-cover rounded-full size-12"
               />
-              {onlineUsers.includes(user._id) && (
+              {onlineUsers?.includes(user._id) && (
                 <span
                   className="absolute bottom-0 right-0 bg-green-500 rounded-full size-3 ring-2 ring-zinc-900"
                 />
@@ -71,13 +71,13 @@ const Sidebar = () => {
             <div className="hidden min-w-0 text-left lg:block">
               <div className="font-medium truncate">{user.name}</div>
               <div className="text-sm text-zinc-400">
-                {onlineUsers.includes(user._id) ? "Online" : "Offline"}
+                {onlineUsers?.includes(user._id) ? "Online" : "Offline"}
               </div>
             </div>
           </button>
         ))}
 
-        {filteredUsers.length === 0 && (
+        {filteredUsers?.length === 0 && (
           <div className="py-4 text-center text-zinc-500">No online users</div>
         )}
       </div>

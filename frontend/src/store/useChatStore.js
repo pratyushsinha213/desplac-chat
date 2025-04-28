@@ -2,6 +2,7 @@ import { axiosInstance } from "@/lib/axios";
 import { toast } from "sonner";
 import { create } from "zustand";
 import { useAuthStore } from "./useAuthStore";
+import { CloudCog } from "lucide-react";
 
 
 export const useChatStore = create((set, get) => ({
@@ -15,7 +16,7 @@ export const useChatStore = create((set, get) => ({
         set({ isUsersLoading: true });
         try {
             const res = await axiosInstance.get('/messages/users');
-            set({ users: res.data.data });
+            set({ users: res.data });
         } catch (error) {
             toast.error(error.response.data.messages);
         } finally {
@@ -26,9 +27,12 @@ export const useChatStore = create((set, get) => ({
     getMessages: async (userId) => {
         set({ isMessagesLoading: true });
         try {
+            console.log('Fetching messages for user:', userId);
             const res = await axiosInstance.get(`/messages/${userId}`)
-            set({ messages: res.data.data });
+            console.log('Received messages:', res.data);
+            set({ messages: res.data });
         } catch (error) {
+            console.error('Error fetching messages:', error);
             toast.error(error.response.data.message);
         } finally {
             set({ isMessagesLoading: false });
@@ -39,7 +43,7 @@ export const useChatStore = create((set, get) => ({
         const { selectedUser, messages } = get();
         try {
             const res = await axiosInstance.post(`/messages/send/${selectedUser._id}`, messageData);
-            set({ messages: [...messages, res.data.data] });
+            set({ messages: [...messages, res.data] });
         } catch (error) {
             toast.error(error.response.data.message);
         }
@@ -47,15 +51,29 @@ export const useChatStore = create((set, get) => ({
 
     listenToMessages: () => {
         const { selectedUser } = get();
-        if (!selectedUser) return;
+        if (!selectedUser) {
+            console.log('No selected user, skipping message listener setup');
+            return;
+        }
 
         const socket = useAuthStore.getState().socket;
+        if (!socket) {
+            console.log('No socket connection, skipping message listener setup');
+            return;
+        }
 
-
-        //To do .
+        console.log('Setting up message listener for user:', selectedUser._id);
         socket.on("newMessage", (newMessage) => {
-            const isMsgSentFromSelectedUser = newMessage.sendId === selectedUser._id;
-            if (!isMsgSentFromSelectedUser) return;
+            console.log('Received new message:', newMessage);
+            const { authUser } = useAuthStore.getState();
+            const isRelevantMessage = 
+                (newMessage.senderId === authUser._id && newMessage.recieverId === selectedUser._id) ||
+                (newMessage.senderId === selectedUser._id && newMessage.recieverId === authUser._id);
+            
+            if (!isRelevantMessage) {
+                console.log('Message not relevant to current chat, ignoring');
+                return;
+            }
             set({messages: [...get().messages, newMessage]});
         });
     },
