@@ -27,9 +27,7 @@ export const useChatStore = create((set, get) => ({
     getMessages: async (userId) => {
         set({ isMessagesLoading: true });
         try {
-            console.log('Fetching messages for user:', userId);
             const res = await axiosInstance.get(`/messages/${userId}`)
-            console.log('Received messages:', res.data);
             set({ messages: res.data });
         } catch (error) {
             console.error('Error fetching messages:', error);
@@ -62,7 +60,6 @@ export const useChatStore = create((set, get) => ({
             return;
         }
 
-        console.log('Setting up message listener for user:', selectedUser._id);
         socket.on("newMessage", (newMessage) => {
             console.log('Received new message:', newMessage);
             const { authUser } = useAuthStore.getState();
@@ -71,7 +68,6 @@ export const useChatStore = create((set, get) => ({
                 (newMessage.senderId === selectedUser._id && newMessage.recieverId === authUser._id);
             
             if (!isRelevantMessage) {
-                console.log('Message not relevant to current chat, ignoring');
                 return;
             }
             set({messages: [...get().messages, newMessage]});
